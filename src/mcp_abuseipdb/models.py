@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field, AliasPath
+from pydantic import BaseModel, Field, AliasPath, AliasChoices
 
 
 class AbuseCategory(BaseModel):
@@ -17,7 +17,10 @@ class IPCheckResponse(BaseModel):
     is_public: bool = Field(alias="isPublic")
     ip_version: int = Field(alias="ipVersion")
     is_whitelisted: bool = Field(alias="isWhitelisted")
-    abuse_confidence_percentage: int = Field(alias="abuseConfidenceScore")
+    abuse_confidence_percentage: int = Field(
+        alias="abuseConfidenceScore",
+        validation_alias=AliasChoices("abuseConfidenceScore", "abuseConfidencePercentage"),
+    )
     country_code: Optional[str] = Field(alias="countryCode", default=None)
     country_name: Optional[str] = Field(alias="countryName", default=None)
     usage_type: str = Field(alias="usageType")
@@ -48,7 +51,10 @@ class BlacklistEntry(BaseModel):
     """Single entry from blacklist endpoint."""
     ip_address: str = Field(alias="ipAddress")
     country_code: Optional[str] = Field(alias="countryCode", default=None)
-    abuse_confidence_percentage: int = Field(alias="abuseConfidenceScore")
+    abuse_confidence_percentage: int = Field(
+        alias="abuseConfidenceScore",
+        validation_alias=AliasChoices("abuseConfidenceScore", "abuseConfidencePercentage"),
+    )
     last_reported_at: Optional[datetime] = Field(alias="lastReportedAt", default=None)
 
     model_config = {"populate_by_name": True}
