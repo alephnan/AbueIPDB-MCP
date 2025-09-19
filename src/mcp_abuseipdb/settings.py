@@ -1,0 +1,83 @@
+"""Configuration settings for MCP AbuseIPDB server."""
+
+import os
+import sys
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
+
+    # AbuseIPDB API Configuration
+    abuseipdb_api_key: str = Field(..., env="ABUSEIPDB_API_KEY")
+    abuseipdb_base_url: str = Field(
+        default="https://api.abuseipdb.com/api/v2",
+        env="ABUSEIPDB_BASE_URL"
+    )
+
+    # Request Configuration
+    max_age_days: int = Field(default=30, env="MAX_AGE_DAYS", ge=1, le=365)
+    confidence_threshold: int = Field(default=75, env="CONFIDENCE_THRESHOLD", ge=0, le=100)
+    blacklist_confidence_min: int = Field(default=90, env="BLACKLIST_CONFIDENCE_MIN", ge=0, le=100)
+
+    # Rate Limiting
+    daily_quota: int = Field(default=1000, env="DAILY_QUOTA", ge=1)
+    request_timeout: int = Field(default=30, env="REQUEST_TIMEOUT", ge=5, le=300)
+    max_retries: int = Field(default=3, env="MAX_RETRIES", ge=0, le=10)
+
+    # Cache Configuration
+    cache_db_path: str = Field(default="./cache.db", env="CACHE_DB_PATH")
+    cache_default_ttl: int = Field(default=3600, env="CACHE_DEFAULT_TTL", ge=60)  # 1 hour
+
+    # Logging
+    log_level: str = Field(default="INFO", env="LOG_LEVEL")
+    log_format: str = Field(default="json", env="LOG_FORMAT")
+
+    # Security
+    allow_private_ips: bool = Field(default=False, env="ALLOW_PRIVATE_IPS")
+
+    model_config = SettingsConfigDict(
+        env_file=None,
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+    )
+
+    def __init__(self, _env_file: str | None = None, **data: object) -> None:
+        if _env_file is None:
+            config_env_file = getattr(self.model_config, 'get', lambda *args, **kwargs: None)('env_file')
+            if config_env_file is not None:
+                _env_file = config_env_file
+            else:
+                running_tests = 'pytest' in sys.modules or os.environ.get('PYTEST_CURRENT_TEST') is not None
+                # Always try to load .env for MCP server, but fall back gracefully
+                if not running_tests:
+                    # Try to find .env file in current directory or parent directories
+                    import pathlib
+                    current_dir = pathlib.Path.cwd()
+                    for path in [current_dir] + list(current_dir.parents):
+                        env_file = path / '.env'
+                        if env_file.exists():
+                            _env_file = str(env_file)
+                            break
+                    else:
+                        # If no .env found, still set it to '.env' for pydantic-settings to handle
+                        _env_file = '.env'
+
+        # For MCP server debugging, log environment loading
+        if _env_file and os.path.exists(_env_file):
+            print(f"[MCP AbuseIPDB] Loading environment from: {_env_file}", file=sys.stderr)
+        elif _env_file:
+            print(f"[MCP AbuseIPDB] Environment file not found: {_env_file}", file=sys.stderr)
+
+        super().__init__(_env_file=_env_file, **data)
+
+        # Validate API key is loaded
+        if not self.abuseipdb_api_key or self.abuseipdb_api_key.strip() == "":
+            api_key_env = os.environ.get('ABUSEIPDB_API_KEY', '')
+            print(f"[MCP AbuseIPDB] API key validation failed:", file=sys.stderr)
+            print(f"  - Settings API key: {'SET' if self.abuseipdb_api_key else 'EMPTY'}", file=sys.stderr)
+            print(f"  - Environment var:  {'SET' if api_key_env else 'EMPTY'}", file=sys.stderr)
+            print(f"  - Environment file: {_env_file}", file=sys.stderr)
+            raise ValueError("ABUSEIPDB_API_KEY is required but not found in environment variables or .env file")

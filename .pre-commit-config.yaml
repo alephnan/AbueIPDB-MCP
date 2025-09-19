@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-json
+      - id: debug-statements
+      - id: check-docstring-first
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.3
+    hooks:
+      - id: prettier
+        types_or: [markdown, yaml, json]
+
+  - repo: local
+    hooks:
+      - id: pytest-fast
+        name: pytest-fast
+        entry: pytest
+        language: python
+        args: [
+          tests/,
+          --ignore=tests/test_docker.py,
+          --ignore=tests/test_integration.py,
+          -x,
+          --tb=short
+        ]
+        pass_filenames: false
+        additional_dependencies: [pytest, pytest-asyncio]
+
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit.com hooks
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

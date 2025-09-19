@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "mcp-abuseipdb": {
+      "command": "python",
+      "args": ["-m", "mcp_abuseipdb.server"],
+      "env": {
+        "ABUSEIPDB_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
