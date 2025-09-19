@@ -32,7 +32,7 @@ repos:
           --tb=short
         ]
         pass_filenames: false
-        additional_dependencies: [pytest, pytest-asyncio]
+        additional_dependencies: [".[dev]"]
 
 ci:
   autofix_commit_msg: |
