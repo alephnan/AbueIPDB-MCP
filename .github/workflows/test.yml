@@ -129,16 +129,7 @@ jobs:
 
     - name: Generate requirements for audit
       run: |
-        python <<'PY'
-import pathlib
-import tomllib
-
-data = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
-deps = list(dict.fromkeys(data.get("project", {}).get("dependencies", [])))
-dev_deps = data.get("project", {}).get("optional-dependencies", {}).get("dev", [])
-deps.extend(x for x in dev_deps if x not in deps)
-pathlib.Path("pip-audit-requirements.txt").write_text("\n".join(deps) + "\n")
-PY
+        python -c "import pathlib, tomllib; data = tomllib.loads(pathlib.Path('pyproject.toml').read_text()); deps = list(dict.fromkeys(data.get('project', {}).get('dependencies', []))); dev_deps = data.get('project', {}).get('optional-dependencies', {}).get('dev', []); deps.extend(x for x in dev_deps if x not in deps); pathlib.Path('pip-audit-requirements.txt').write_text('\n'.join(deps) + '\n')"
 
     - name: Run pip-audit
       run: pip-audit -r pip-audit-requirements.txt
