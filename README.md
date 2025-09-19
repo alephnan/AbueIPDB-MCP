@@ -285,7 +285,7 @@ If you're getting unauthorized API key errors when using the MCP server with Cla
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ## Support
 
