@@ -62,7 +62,13 @@ class BlacklistEntry(BaseModel):
 
 class BlacklistResponse(BaseModel):
     """Response model for blacklist endpoint."""
-    generated_at: datetime = Field(validation_alias=AliasPath("meta", "generatedAt"))
+    generated_at: datetime = Field(
+        validation_alias=AliasChoices(
+            AliasPath("meta", "generatedAt"),
+            "generatedAt",
+            "generated_at",
+        )
+    )
     data: List[BlacklistEntry]
 
     model_config = {"populate_by_name": True}

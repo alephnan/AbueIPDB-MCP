@@ -128,4 +128,4 @@ jobs:
         pip install -e .
 
     - name: Run pip-audit
-      run: pip-audit
+      run: pip-audit --skip-editable
