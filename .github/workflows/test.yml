@@ -41,12 +41,7 @@ jobs:
           --ignore=tests/test_integration.py \
           -v
 
-    - name: Upload coverage to Codecov
-      if: matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: true
+    # Codecov upload disabled due to rate limiting; re-enable when token available
 
   integration-test:
     runs-on: ubuntu-latest
